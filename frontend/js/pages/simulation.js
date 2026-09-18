@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let renderer = null;
     let showForceVectors = true;
     let lastAnalysis = null;
+    let selectedJoint = "knee";
 
     // ── Initialize 3D Renderer ───────────────────────────────
     const container3d = document.getElementById('skeleton3d');
@@ -51,6 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             renderer = new SimulationRenderer(container3d);
 
+            renderer.onJointClick = name => { selectedJoint = renderer.jointMeshes[name].userData.category; updateInspector(); };
+            new ResizeObserver(() => renderer._onResize()).observe(container3d);
             // Joint hover callback
             renderer.onJointHover = (jointName) => {
                 const hudBottom = document.getElementById('hudBottom');
@@ -69,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         } catch (e) {
             console.warn('3D renderer init failed:', e);
+            container3d.textContent = '3D unavailable: enable WebGL in your browser. Stress controls and reports still work.';
             renderer = null;
         }
     }
@@ -171,10 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Initialize Sliders ───────────────────────────────────
     ui.initSliders();
-    ui.onSliderChange = () => {
-        const runBtn = document.getElementById('runSimBtn');
-        if (runBtn) runBtn.classList.add('pulse-ready');
-    };
+    ui.onSliderChange = () => { runSimulation(); };
 
     // ── Duration Presets ─────────────────────────────────────
     document.querySelectorAll('.duration-preset').forEach(btn => {
@@ -230,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Run backend physics
         const analysis = physics.getFullAnalysis(angles, loadWeight, duration);
         lastAnalysis = analysis;
+        updateInspector();
 
         // Save session for report
         saveToStorage('lastSession', {
@@ -243,7 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ── Update 3D Viewer ─────────────────────────────────
         if (renderer) {
+            renderer.updatePosture(angles);
             renderer.updateJointColors(analysis.riskScores);
+            renderer.setStructureMode(document.getElementById("bodyLayer").value);
             renderer.renderForceVectors(analysis.jointForces, showForceVectors);
         }
 
@@ -307,6 +311,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (runBtn) runBtn.classList.remove('pulse-ready');
     }
 
+    function updateInspector() {
+        if (!lastAnalysis) return;
+        const force=lastAnalysis.jointForces[selectedJoint], score=lastAnalysis.riskScores[selectedJoint];
+        document.getElementById('jointInspector').textContent = (JOINT_LABELS[selectedJoint] || selectedJoint) + ' · ' + Math.round(force) + ' N estimated force · ' + score + '/100 model stress index. Adjust posture and load to compare.';
+    }
+    document.getElementById('bodyLayer').addEventListener('change', e => renderer?.setStructureMode(e.target.value));
+    document.getElementById('vectorsBtn').addEventListener('click', e => { showForceVectors=!showForceVectors; e.target.setAttribute('aria-pressed',showForceVectors); renderer?.renderForceVectors(lastAnalysis?.jointForces,showForceVectors); });
+    document.getElementById('rotateBtn').addEventListener('click', e => { if(renderer?.controls) { renderer.controls.autoRotate=!renderer.controls.autoRotate; e.target.setAttribute('aria-pressed',renderer.controls.autoRotate); } });
+    document.getElementById('resetPoseBtn').addEventListener('click', () => { ui.setSliderValues({trunk:0,knee:0,hip:0}); currentScenario=null; document.getElementById('hudName').textContent='Custom neutral posture'; document.querySelectorAll('.scenario-card').forEach(c=>c.classList.remove('active')); runSimulation(); });
+    document.getElementById('exportDataBtn').addEventListener('click', () => { const url=URL.createObjectURL(new Blob([JSON.stringify(loadFromStorage('lastSession'),null,2)],{type:'application/json'})); const a=document.createElement('a'); a.href=url; a.download='bioguard-session.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); });
     // ── Run Button Click ─────────────────────────────────────
     const runBtn = document.getElementById('runSimBtn');
     if (runBtn) {
@@ -355,9 +369,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Auto-run demo if demo mode ───────────────────────────
-    if (isDemo) {
-        setTimeout(() => {
-            onScenarioSelect('sitting_desk');
-        }, 500);
-    }
+    onScenarioSelect('sitting_desk');
 });

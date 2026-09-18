@@ -11,10 +11,11 @@
     <link rel="stylesheet" href="css/simulation.css">
 
     <!-- Three.js + OrbitControls from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="/vendor/three.js"></script>
+    <script src="/vendor/OrbitControls.js"></script>
     <!-- Chart.js from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/vendor/chart.js"></script>
+<link rel="stylesheet" href="css/studio.css">
 </head>
 <body>
     <div class="page-wrapper simulation-page">
@@ -131,7 +132,7 @@
                 </div>
 
                 <!-- ═══ CENTER PANEL: 3D Viewer ═══ -->
-                <div class="sim-center mobile-visible" id="panelViewer">
+                <div class="sim-center" id="panelViewer">
                     <div id="skeleton3d" role="img" aria-label="3D skeletal joint visualization showing force vectors"></div>
 
                     <!-- HUD Overlay -->
@@ -147,11 +148,15 @@
 
                         <div class="fixit-toggle">
                             <button class="fixit-btn" id="fixitBtn" aria-label="Toggle Fix-It Mode">
-                                🔧 Fix-It Mode
+                                Neutral reference
                             </button>
                         </div>
 
-                        <div class="view-controls">
+                        <div class="studio-tools" aria-label="Body visualization controls">
+<label>BODY LAYER <select id="bodyLayer"><option value="surface">Surface</option><option value="xray">X-ray structure</option><option value="wireframe">Wireframe</option></select></label>
+<button id="vectorsBtn" aria-pressed="true">Force vectors</button><button id="rotateBtn" aria-pressed="false">Auto rotate</button><button id="resetPoseBtn">Reset posture</button><button id="exportDataBtn">Export session</button>
+</div><div class="studio-note">SCHEMATIC BODY · Educational estimates, not measured forces or a clinical assessment.<br>Drag to orbit · Scroll to zoom · Click a joint to inspect</div>
+<div class="view-controls">
                             <button class="view-btn" data-view="front" title="Front View" aria-label="Front View">⊞</button>
                             <button class="view-btn" data-view="side" title="Side View" aria-label="Side View">⊟</button>
                             <button class="view-btn" data-view="top" title="Top View" aria-label="Top View">⊡</button>
@@ -206,7 +211,7 @@
 
                     <!-- Risk Summary -->
                     <div class="risk-summary">
-                        <div class="risk-overall-label">OVERALL RISK</div>
+                        <div class="risk-overall-label">MODEL STRESS INDEX</div>
                         <div class="risk-overall-score">
                             <span id="overallScore">0</span>
                             <span class="risk-overall-unit">/ 100</span>
@@ -219,7 +224,7 @@
                     </div>
 
                     <!-- Warnings -->
-                    <div class="warnings-container" id="warningsContainer"></div>
+                    <div class="joint-inspector" id="jointInspector" aria-live="polite">Select a joint on the body to inspect its estimated load.</div><div class="warnings-container" id="warningsContainer"></div>
 
                     <!-- Generate Report Button -->
                     <div class="report-btn-wrap">

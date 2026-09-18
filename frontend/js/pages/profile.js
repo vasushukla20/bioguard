@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const valueEl = container?.querySelector('.slider-value');
         const bubble = container?.querySelector('.slider-bubble');
         const suffix = slider.dataset.suffix || '';
+        const field = {ageSlider:'age',weightSlider:'weight',heightSlider:'height'}[slider.id];
+        if (field) slider.value=state[field];
 
         const update = () => {
             const val = slider.value;
@@ -77,26 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // ── Pre-populate sliders if existing profile ─────────────
-    if (existingProfile) {
-        const ageSlider = document.getElementById('ageSlider');
-        const weightSlider = document.getElementById('weightSlider');
-        const heightSlider = document.getElementById('heightSlider');
-        
-        if (ageSlider) {
-            ageSlider.value = state.age;
-            ageSlider.dispatchEvent(new Event('input'));
-        }
-        if (weightSlider) {
-            weightSlider.value = state.weight;
-            weightSlider.dispatchEvent(new Event('input'));
-        }
-        if (heightSlider) {
-            heightSlider.value = state.height;
-            heightSlider.dispatchEvent(new Event('input'));
-        }
-    }
-
     // ── Body Type Cards ──────────────────────────────────────
     document.querySelectorAll('.body-type-card').forEach(card => {
         // Pre-select if existing profile
@@ -327,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.body_type) progress += 30;
 
         // Health: 30%
-        if (state.health_conditions.length > 0) progress += 30;
+        progress += 30; // Health conditions are optional.
 
         // Update progress bar
         const fill = document.getElementById('progressFill');
@@ -356,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Enable submit button
         const btn = document.getElementById('btnSubmit');
-        const canSubmit = state.name.length > 0 && state.body_type && state.health_conditions.length > 0;
+        const canSubmit = state.name.length > 0 && state.body_type;
         if (btn) btn.disabled = !canSubmit;
     }
 

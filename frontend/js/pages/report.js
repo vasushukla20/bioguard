@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Projection Chart ─────────────────────────────────────
     if (longTermProjection) {
         // Find top 3 at-risk joints
-        const topJoints = JOINTS
+        const topJoints = [...JOINTS]
             .sort((a, b) => (riskScores[b] || 0) - (riskScores[a] || 0))
             .slice(0, 3);
 
@@ -299,18 +299,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Share Report ─────────────────────────────────────────
     const shareBtn = document.getElementById('btnShareReport');
     if (shareBtn) {
+        shareBtn.textContent = 'EXPORT REPORT DATA';
         shareBtn.addEventListener('click', () => {
-            const originalText = shareBtn.textContent;
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                shareBtn.textContent = '✓ Link Copied!';
-                shareBtn.style.borderColor = 'var(--success-green)';
-                shareBtn.style.color = 'var(--success-green)';
-                setTimeout(() => {
-                    shareBtn.textContent = originalText;
-                    shareBtn.style.borderColor = '';
-                    shareBtn.style.color = '';
-                }, 2000);
-            });
+            const url=URL.createObjectURL(new Blob([JSON.stringify(session,null,2)],{type:'application/json'}));
+            const a=document.createElement('a'); a.href=url; a.download='bioguard-report.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
         });
     }
 

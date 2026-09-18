@@ -308,6 +308,8 @@ export default class SimulationRenderer {
             }
         });
 
+        this.bodyParts = parts;
+        this.restPose = parts.map(m => ({ position:m.position.clone(), quaternion:m.quaternion.clone() }));
         this.scene.add(this.bodyGroup);
 
         // ─── Joint Stress Overlay Spheres ────────────
@@ -411,7 +413,7 @@ export default class SimulationRenderer {
             jointNames.forEach(name => {
                 // Color the body part
                 const bodyMesh = this.jointMeshes[name];
-                if (bodyMesh && score >= 20) {
+                if (bodyMesh) {
                     bodyMesh.material.color.copy(color);
                     bodyMesh.material.emissive = color.clone().multiplyScalar(0.15);
                     bodyMesh.material.opacity = 1;
@@ -448,7 +450,7 @@ export default class SimulationRenderer {
 
     // ── Force Vector Arrows ──────────────────────────────────
     renderForceVectors(jointForces, show = true) {
-        this.forceArrows.forEach(a => this.scene.remove(a));
+        this.forceArrows.forEach(a => { this.scene.remove(a); a.line.material.dispose(); a.cone.material.dispose(); });
         this.forceArrows = [];
         if (!show || !jointForces) return;
 
@@ -466,7 +468,7 @@ export default class SimulationRenderer {
             jointNames.forEach(name => {
                 const overlay = this.jointOverlays[name];
                 if (!overlay) return;
-                const pos = overlay.position;
+                const pos = overlay.getWorldPosition(new THREE.Vector3());
 
                 const dir = new THREE.Vector3(0, -1, 0);
                 const origin = pos.clone().add(new THREE.Vector3(0, length + 0.08, 0));
@@ -488,7 +490,7 @@ export default class SimulationRenderer {
         this.fixItMode = enabled;
 
         if (this.ghostBody) {
-            this.ghostBody.forEach(m => this.scene.remove(m));
+            this.ghostBody.forEach(m => { this.scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
             this.ghostBody = null;
         }
 
@@ -507,8 +509,10 @@ export default class SimulationRenderer {
         this.bodyGroup.children.forEach(child => {
             if (child.geometry && !child.userData.isRing) {
                 const ghost = new THREE.Mesh(child.geometry.clone(), ghostMat);
-                ghost.position.copy(child.position);
-                ghost.rotation.copy(child.rotation);
+                const rest = this.restPose[this.bodyParts.indexOf(child)];
+                if (!rest) return;
+                ghost.position.copy(rest.position);
+                ghost.quaternion.copy(rest.quaternion);
                 ghost.scale.copy(child.scale);
                 this.scene.add(ghost);
                 this.ghostBody.push(ghost);
@@ -550,6 +554,73 @@ export default class SimulationRenderer {
         requestAnimationFrame(animateCamera);
     }
 
+    
+    setStructureMode(mode) {
+        this.structureMode = mode;
+        this.bodyParts.forEach((mesh, index) => {
+            mesh.material.wireframe = mode === 'wireframe';
+            mesh.material.transparent = mode === 'xray';
+            mesh.material.opacity = mode === 'xray' ? 0.16 : 1;
+            mesh.material.depthWrite = mode !== 'xray';
+            if (index === 5) mesh.material.opacity = 0.45;
+        });
+        if (this.skeletonLines) this.skeletonLines.visible = mode === 'xray';
+    }
+
+    updatePosture(angles) {
+        if (!this.bodyParts) return;
+        const rad = value => THREE.MathUtils.degToRad(Number(value) || 0);
+        const trunk = rad(angles.trunk), hip = rad(angles.hip), knee = rad(angles.knee);
+        const thighAngle = hip - trunk, shinAngle = thighAngle - knee;
+        const pelvisY = 0.12 + 0.43 * Math.cos(thighAngle) + 0.40 * Math.cos(shinAngle);
+        const pelvisZ = -0.43 * Math.sin(thighAngle) - 0.40 * Math.sin(shinAngle);
+        const pivot = new THREE.Vector3(0, pelvisY, pelvisZ);
+        const rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), trunk);
+        this.bodyParts.forEach((m,i) => { m.position.copy(this.restPose[i].position); m.quaternion.copy(this.restPose[i].quaternion); });
+        for(let i=0;i<16;i++) {
+            const m=this.bodyParts[i];
+            m.position.sub(new THREE.Vector3(0,0.95,0)).applyQuaternion(rotation).add(pivot);
+            m.quaternion.copy(rotation);
+        }
+        const segments=[];
+        const connect=(mesh,a,b) => {
+            mesh.position.copy(a).add(b).multiplyScalar(0.5);
+            mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),a.clone().sub(b).normalize());
+            segments.push(a,b);
+        };
+        for(let side=0;side<2;side++) {
+            const i=16+side*6, x=side===0 ? -0.10 : 0.10;
+            const a=new THREE.Vector3(x,pelvisY,pelvisZ);
+            const b=a.clone().add(new THREE.Vector3(0,-0.43*Math.cos(thighAngle),0.43*Math.sin(thighAngle)));
+            const c=b.clone().add(new THREE.Vector3(0,-0.40*Math.cos(shinAngle),0.40*Math.sin(shinAngle)));
+            this.bodyParts[i].position.copy(a);
+            this.bodyParts[i+2].position.copy(b);
+            this.bodyParts[i+4].position.copy(c);
+            this.bodyParts[i+5].position.copy(c).add(new THREE.Vector3(0,-0.10,0.02));
+            connect(this.bodyParts[i+1],a,b); connect(this.bodyParts[i+3],b,c);
+        }
+        for (const [name,mesh] of Object.entries(this.jointMeshes)) this.jointOverlays[name].position.copy(mesh.position);
+        this.bodyGroup.children.filter(m=>m.userData.isRing).forEach(m=>m.position.copy(this.jointMeshes[m.userData.jointName].position));
+        const point=i=>this.bodyParts[i].position.clone();
+        segments.push(pivot,point(1),point(6),point(11),point(16),point(22));
+        for(const i of [6,11]) segments.push(point(i),point(i+2),point(i+2),point(i+4));
+        // Schematic ribs provide structure without implying a clinical anatomical scan.
+        for(let i=0;i<7;i++) {
+            const y=0.28+i*0.045, width=0.16-Math.abs(i-3)*0.009;
+            const pts=[[-width,y,0.01],[0,y-0.03,0.11],[width,y,0.01]];
+            const v=pts.map(p=>new THREE.Vector3(...p).applyQuaternion(rotation).add(pivot));
+            segments.push(v[0],v[1],v[1],v[2]);
+        }
+        if (!this.skeletonLines) {
+            this.skeletonLines=new THREE.LineSegments(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:0x9bfff4,depthTest:false,transparent:true,opacity:0.9}));
+            this.skeletonLines.renderOrder=3; this.scene.add(this.skeletonLines);
+        }
+        this.skeletonLines.geometry.dispose();
+        this.skeletonLines.geometry=new THREE.BufferGeometry().setFromPoints(segments);
+        this.setStructureMode(this.structureMode || 'surface');
+        this.scene.updateMatrixWorld(true);
+    }
+
     resetCamera() { this.setCameraPosition('front'); }
 
     // ── Mouse Interaction ────────────────────────────────────
@@ -589,7 +660,8 @@ export default class SimulationRenderer {
         }
     }
 
-    _onClick() {
+    _onClick(event) {
+        this._onMouseMove(event);
         if (this.hoveredJoint && this.onJointClick) {
             this.onJointClick(this.hoveredJoint);
         }
@@ -631,7 +703,7 @@ export default class SimulationRenderer {
         // Subtle idle breathing on body
         if (this.bodyGroup) {
             const breathe = 1 + Math.sin(time * 0.8) * 0.003;
-            this.bodyGroup.scale.set(1, breathe, 1);
+            // Keep force vectors and anatomy aligned in world space.
         }
 
         if (this.controls) this.controls.update();

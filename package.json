@@ -1,0 +1,1 @@
+{"name":"bioguard-studio","private":true,"type":"module","scripts":{"start":"node start.js","test":"node --test test/*.test.js"},"dependencies":{"three":"0.128.0","chart.js":"4.4.1"}}

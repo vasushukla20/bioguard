@@ -1,0 +1,18 @@
+
+.studio-tools{position:absolute;left:18px;top:70px;display:flex;flex-wrap:wrap;gap:8px;max-width:calc(100% - 36px);pointer-events:auto}
+.studio-tools button,.studio-tools select{background:#102537eF;border:1px solid #275369;color:#d3f9f5;border-radius:7px;padding:8px 10px;font:11px monospace;cursor:pointer}
+.studio-tools button[aria-pressed=true]{border-color:#5ce3c0;color:#5ce3c0;background:#123732}
+.studio-tools label{font:9px monospace;color:#87a4b1;display:flex;align-items:center;gap:7px}
+.studio-note{position:absolute;bottom:18px;left:18px;right:70px;color:#94aebd;font:10px/1.7 monospace;pointer-events:none}
+.joint-inspector{margin:16px 0;padding:14px;border:1px solid #326e70;border-radius:8px;background:#10272f;color:#b8f7e6;font:12px/1.7 monospace}
+.hud-bottom{bottom:85px}.sim-center{min-height:560px}.fixit-toggle{bottom:140px!important}
+@media(max-width:768px){.studio-tools{top:65px}.sim-center{min-height:620px}.studio-note{font-size:9px}}
+
+.simulation-page .navbar{height:64px;min-height:64px;padding:8px 24px;box-sizing:border-box}.simulation-page .nav-logo{display:flex;flex-direction:row;align-items:center;gap:10px}.simulation-page .nav-logo-text{font-size:18px}
+.sim-left>*{flex-shrink:0}.scenario-list{height:230px;min-height:230px}.scenario-card{flex-shrink:0}.fixit-toggle{top:16px!important;bottom:auto!important}
+@media(max-width:768px){.simulation-page .navbar{padding:8px 12px}.simulation-page .nav-links{display:flex;gap:10px}.simulation-page .nav-logo-text{display:none}.simulation-page .nav-links a{font-size:10px}.fixit-toggle{top:auto!important;bottom:125px!important}.sim-left{max-height:none}}
+
+@media(min-width:769px) and (max-width:1024px){.sim-layout{grid-template-columns:220px 1fr 260px}.sim-right{display:flex}}
+@media(max-width:768px){.sim-tabs{position:sticky;top:64px;z-index:100;background:#0d1528}.sim-center.mobile-visible{height:calc(100dvh - 110px);min-height:620px}.simulation-page .nav-links{position:static;transform:none;opacity:1;visibility:visible;background:transparent;margin:0;padding:0}}
+
+@media(max-width:768px){.simulation-page .nav-links{flex-direction:row;align-items:center;flex-wrap:nowrap}.studio-note{right:18px;bottom:55px}.view-controls{bottom:12px}.hud-bottom{bottom:105px}.fixit-toggle{bottom:155px!important}}
