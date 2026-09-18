@@ -67,11 +67,11 @@ server.on('error', async error => {
     return;
   }
   console.log(`Port ${port} belongs to another app; trying ${port + 1}…`);
-  server.listen(++port, '127.0.0.1');
+  server.listen(++port, '0.0.0.0');
 });
 server.on('listening', () => {
   const url = `http://127.0.0.1:${server.address().port}`;
   console.log(`BioGuard Studio ready: ${url}\nLocal profiles, 3D simulation and reports. Ctrl+C to stop.`);
   openBrowser(url);
 });
-server.listen(port, '127.0.0.1');
+server.listen(port, '0.0.0.0');
