@@ -3,7 +3,7 @@
 // Orchestrates 3D renderer, physics, charts, and UI
 // ═══════════════════════════════════════════════════════════════
 
-import SimulationRenderer from '../classes/SimulationRenderer.js';
+import SimulationRenderer from '../classes/AnatomyRenderer.js';
 import UIController from '../classes/UIController.js';
 import ChartManager from '../classes/ChartManager.js';
 import AnimationManager from '../classes/AnimationManager.js';
@@ -369,5 +369,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Auto-run demo if demo mode ───────────────────────────
-    onScenarioSelect('sitting_desk');
+    onScenarioSelect('standing_long');
 });

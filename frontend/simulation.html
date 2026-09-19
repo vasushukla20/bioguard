@@ -13,6 +13,7 @@
     <!-- Three.js + OrbitControls from CDN -->
     <script src="/vendor/three.js"></script>
     <script src="/vendor/OrbitControls.js"></script>
+    <script src="js/vendor/GLTFLoader.js"></script>
     <!-- Chart.js from CDN -->
     <script src="/vendor/chart.js"></script>
 <link rel="stylesheet" href="css/studio.css">
@@ -153,9 +154,9 @@
                         </div>
 
                         <div class="studio-tools" aria-label="Body visualization controls">
-<label>BODY LAYER <select id="bodyLayer"><option value="surface">Surface</option><option value="xray">X-ray structure</option><option value="wireframe">Wireframe</option></select></label>
+<label>BODY LAYER <select id="bodyLayer"><option value="combined">Muscles + skeleton</option><option value="muscles">Muscles</option><option value="skeleton">Skeleton</option><option value="xray">X-ray</option></select></label>
 <button id="vectorsBtn" aria-pressed="true">Force vectors</button><button id="rotateBtn" aria-pressed="false">Auto rotate</button><button id="resetPoseBtn">Reset posture</button><button id="exportDataBtn">Export session</button>
-</div><div class="studio-note">SCHEMATIC BODY · Educational estimates, not measured forces or a clinical assessment.<br>Drag to orbit · Scroll to zoom · Click a joint to inspect</div>
+</div><div class="studio-note">Z-ANATOMY · Illustrative posture rig · Educational stress estimates. <a href="models/ATTRIBUTION.txt" target="_blank" rel="noopener">Model credits</a><br>Drag to orbit · Scroll to zoom · Click a joint to inspect</div>
 <div class="view-controls">
                             <button class="view-btn" data-view="front" title="Front View" aria-label="Front View">⊞</button>
                             <button class="view-btn" data-view="side" title="Side View" aria-label="Side View">⊟</button>

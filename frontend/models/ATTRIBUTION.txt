@@ -1,0 +1,5 @@
+Anatomical mesh source: Z-Anatomy — The libre 3D atlas of anatomy — CC-BY-SA 4.0.
+BodyParts3D — The Database Center for Life Science — CC-BY-SA 2.1 Japan.
+https://github.com/Z-Anatomy/Models-of-human-anatomy
+Changes: musculoskeletal subset, fascia and annotation removal, mesh merging, decimation and normalization. Derived mesh distributed under CC-BY-SA 4.0; see License.txt.
+Runtime posture deformation is illustrative, not a validated biomechanical model.

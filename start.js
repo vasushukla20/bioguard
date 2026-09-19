@@ -10,7 +10,7 @@ if (!existsSync(resolve(root, 'node_modules/three/build/three.min.js')) || !exis
   if (result.status !== 0) process.exit(result.status || 1);
 }
 const vendor = { '/vendor/three.js': 'three/build/three.min.js', '/vendor/OrbitControls.js': 'three/examples/js/controls/OrbitControls.js', '/vendor/chart.js': 'chart.js/dist/chart.umd.js' };
-const types = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css', '.svg':'image/svg+xml', '.png':'image/png' };
+const types = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css', '.svg':'image/svg+xml', '.png':'image/png', '.glb':'model/gltf-binary', '.txt':'text/plain' };
 const server = http.createServer((req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
@@ -24,7 +24,7 @@ const server = http.createServer((req, res) => {
     const file = vendor[path] ? resolve(root, 'node_modules', vendor[path]) : resolve(base, '.' + (path === '/' ? '/simulation.html' : path));
     if (!vendor[path] && !file.startsWith(base + sep)) { res.writeHead(403).end(); return; }
     const data = readFileSync(file);
-    res.writeHead(200, { 'Content-Type': (types[extname(file)] || 'application/octet-stream') + '; charset=utf-8', 'Cache-Control':'no-cache' });
+    res.writeHead(200, { 'Content-Type': (types[extname(file)] || 'application/octet-stream') + (['.html','.js','.css','.txt','.svg'].includes(extname(file)) ? '; charset=utf-8' : ''), 'Cache-Control':'no-cache' });
     res.end(data);
   } catch { res.writeHead(404).end('Not found'); }
 });

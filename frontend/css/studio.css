@@ -16,3 +16,5 @@
 @media(max-width:768px){.sim-tabs{position:sticky;top:64px;z-index:100;background:#0d1528}.sim-center.mobile-visible{height:calc(100dvh - 110px);min-height:620px}.simulation-page .nav-links{position:static;transform:none;opacity:1;visibility:visible;background:transparent;margin:0;padding:0}}
 
 @media(max-width:768px){.simulation-page .nav-links{flex-direction:row;align-items:center;flex-wrap:nowrap}.studio-note{right:18px;bottom:55px}.view-controls{bottom:12px}.hud-bottom{bottom:105px}.fixit-toggle{bottom:155px!important}}
+
+.anatomy-status{position:absolute;top:48%;left:8%;right:8%;text-align:center;color:#bdeee4;background:#102537;padding:18px;border:1px solid #326e70;border-radius:10px;font:13px/1.6 monospace;z-index:3}.studio-note a{pointer-events:auto;color:#91cec3}.studio-tools select{max-width:180px}
